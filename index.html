@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Zion Green AI Estimator — inference carbon footprint</title>
+<meta name="description" content="Estimate the carbon footprint of AI inference by model size, request volume and cloud region grid intensity. Free tool by Zion Tech Group.">
+<style>
+:root{--bg:#08120c;--card:#0f2015;--acc:#4ade80;--txt:#e7f7ec;--mut:#93b8a0}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt)}
+header{padding:48px 24px 24px;text-align:center;background:linear-gradient(160deg,#0d3a1e,#08120c)}
+h1{margin:0 0 8px}.wrap{max-width:920px;margin:0 auto;padding:24px}
+.panel{background:var(--card);border:1px solid #1c3d28;border-radius:14px;padding:20px;margin-bottom:20px}
+label{display:block;font-size:.85rem;color:var(--mut);margin:12px 0 4px}
+input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #265035;background:#0c1a10;color:var(--txt)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media(max-width:700px){.row{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:.9rem}
+th,td{padding:10px;text-align:right;border-bottom:1px solid #1c3626}th:first-child,td:first-child{text-align:left}
+tr.best td{color:var(--acc);font-weight:600}
+.big{font-size:1.5rem;color:var(--acc);font-weight:700}
+footer{padding:32px 24px;text-align:center;color:var(--mut);font-size:.85rem;border-top:1px solid #173023;margin-top:40px}
+footer a{color:var(--acc);text-decoration:none;margin:0 8px}
+</style>
+</head>
+<body>
+<header><h1>🌱 Zion Green AI Estimator</h1>
+<p>Estimate CO₂e for AI inference by model size and region. Rough order-of-magnitude estimates for planning, not accounting-grade.</p></header>
+<div class="wrap">
+<div class="panel"><div class="row">
+<div><label>Requests per day</label><input id="req" type="number" value="100000"></div>
+<div><label>Avg tokens per request (in+out)</label><input id="tok" type="number" value="2000"></div>
+<div><label>Model size class</label><select id="m"><option value="0.0004">Small (~8B, self-host)</option><option value="0.0012" selected>Medium (~70B class)</option><option value="0.004">Large frontier (API flagship)</option></select></div>
+<div><label>Primary region</label><select id="reg"><option value="20">Nordics / Quebec (~20 gCO₂/kWh)</option><option value="120">Western EU (~120)</option><option value="380" selected>US average (~380)</option><option value="550">APAC coal-heavy (~550)</option></select></div>
+</div></div>
+<div class="panel" id="out"></div>
+</div>
+<footer>Part of the <a href="https://ziontechgroup.com">Zion Tech Group</a> AI apps network ·
+<a href="https://ziontechgroup.com/green-cloud-picker/">Green Cloud Picker</a>
+<a href="https://ziontechgroup.com/zion-ai-finops-optimizer/">AI FinOps</a>
+<a href="https://ziontechgroup.com/zion-ai-sustainability-tracker/">Sustainability Tracker</a></footer>
+<script>
+function calc(){
+const req=+document.getElementById('req').value||0,tok=+document.getElementById('tok').value||0,kwhPerTok=+document.getElementById('m').value/1000,grid=+document.getElementById('reg').value;
+const kwhDay=req*tok*kwhPerTok;const kgYear=kwhDay*365*grid/1000;
+const regions=[[20,'Nordics/Quebec'],[120,'Western EU'],[380,'US avg'],[550,'APAC coal-heavy']].map(([g,n])=>[n,kwhDay*365*g/1000]).sort((a,b)=>a[1]-b[1]);
+document.getElementById('out').innerHTML=`<div class="kv" style="display:flex;justify-content:space-between;padding:8px 0"><span>Daily energy</span><b>${kwhDay.toLocaleString(undefined,{maximumFractionDigits:1})} kWh</b></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0"><span>Annual CO₂e (selected region)</span><span class="big">${kgYear.toLocaleString(undefined,{maximumFractionDigits:0})} kg</span></div>
+<div style="display:flex;justify-content:space-between;padding:8px 0"><span>Equivalent</span><b>${(kgYear/460).toFixed(1)} car-years · ${(kgYear/1100).toFixed(1)} round-trip flights NY–London</b></div>
+<table style="margin-top:14px"><thead><tr><th>Region</th><th>kg CO₂e / year</th></tr></thead><tbody>${regions.map((r,i)=>`<tr class="${i===0?'best':''}"><td>${r[0]}</td><td>${r[1].toLocaleString(undefined,{maximumFractionDigits:0})}</td></tr>`).join('')}</tbody></table>`;}
+['req','tok','m','reg'].forEach(id=>document.getElementById(id).addEventListener('input',calc));calc();
+</script>
+</body>
+</html>
